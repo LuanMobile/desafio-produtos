@@ -3,11 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use Architecture\Application\ProductService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
-{   //TODO: refatorar codigo para implementar services e reporitories
+{
+    public function __construct(
+        protected ProductService $productService
+    ){}
+
     public function create(Request $request)
     {
         $validator = Validator::make($request->all(), [
