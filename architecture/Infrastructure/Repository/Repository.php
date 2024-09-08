@@ -14,28 +14,28 @@ class Repository implements RepositoryInterface
         $this->repository->setCollectionName($collectionName);
     }
 
-    public function save(object $entity): bool
+    public function save(object $entity): ?object
     {
         return $this->repository->save($entity);
     }
 
-    public function update(object $entity): bool
+    public function update(int $id, $entity): ?bool
     {
-        return $this->repository->update($entity);
+        return $this->repository->update($id, $entity);
     }
 
-    public function delete(object $entity): bool
+    public function delete(int $id): ?bool
     {
-        return $this->repository->delete($entity);
+        return $this->repository->delete($id);
     }
 
-    public function findById(int $id): object
+    public function findById(int $id): ?object
     {
         return $this->repository->findById($id);
     }
 
-    public function findAll(): object
+    public function findAll(array $fields): ?object
     {
-        return $this->repository->findAll();
+        return $this->repository->findAll($fields);
     }
 }

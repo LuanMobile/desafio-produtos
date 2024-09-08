@@ -2,39 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
+use App\Http\Requests\ProductRequest;
+use App\Http\Requests\UpdateProductRequest;
+use Architecture\Application\ProductInputDTO;
 use Architecture\Application\ProductService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
     public function __construct(
         protected ProductService $productService
-    ){}
+    ) {
+    }
 
-    public function create(Request $request)
+    public function create(ProductRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            "name"          => ['required', 'string', 'max:255'],
-            "description"   => ["nullable", "string"],
-            "price"         => ["required", "numeric", "min:0"],
-            "quantity"      => ["required", "integer", "min:1"]
-        ]);
-        if ($validator->fails()) {
-
-            $errors = $validator->errors();
-            return response()->json([
-                'errors' => $errors->all(),
-            ], 422);
-        }
-
         try {
-            $product = Product::create($validator->validated());
-
-            if (!$product) {
-                return response()->json(['error' => 'Failed to create product'], 500);
-            }
+            $productDTO = new ProductInputDTO(...$request->validated());
+            $product = $this->productService->create($productDTO);
 
             return response()->json([
                 "status" => "success",
@@ -42,36 +26,19 @@ class ProductController extends Controller
                 "product" => $product
             ], 201);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => "Error creating product: " . $e->getMessage()], 500);
         }
 
     }
 
-    public function update(int $id, Request $request)
-    {    
-        $validator = Validator::make($request->all(), [
-            "name"          => ['nullable', 'string', 'max:255'],
-            "description"   => ["nullable", "string"],
-            "price"         => ["nullable", "numeric", "min:0"],
-            "quantity"      => ["nullable", "integer", "min:1"],
-            "active"        => ["nullable", "boolean"]
-        ]);
-        if ($validator->fails()) {
-
-            $errors = $validator->errors();
-            return response()->json([
-                'errors' => $errors->all(),
-            ], 422);
-        }
-
+    public function update(int $id, UpdateProductRequest $request)
+    {
         try {
-            $product = Product::find($id);
-
+            $product = $this->productService->findById($id);
             if (!$product) {
                 return response()->json(['error' => 'Product not found'], 404);
             }
-
-            $productUpdated = $product->update($validator->validated());
+            $productUpdated = $this->productService->update($id, $request->validated());
 
             if (!$productUpdated) {
                 return response()->json(['error' => 'Failed to update product'], 500);
@@ -89,18 +56,14 @@ class ProductController extends Controller
 
     public function listProducts()
     {
-        $products = Product::all(['id', 'name', 'description', 'price', 'quantity', 'active']);
-
-        if (!$products) {
-            return response()->json(["error" => "There are no products"], 404);
-        }
-
+        $products = $this->productService->findAll(['id', 'name', 'description', 'price', 'quantity', 'active']);
+        
         return response()->json($products);
     }
 
     public function getProduct(int $id)
     {
-        $product = Product::find($id);
+        $product = $this->productService->findById($id);
         if (!$product) {
             return response()->json(['error' => 'Product not found'], 404);
         }
@@ -111,11 +74,10 @@ class ProductController extends Controller
     public function delete(int $id)
     {
         try {
-            $product = Product::find($id);
+            $product = $this->productService->delete($id);
             if (!$product) {
-                return response()->json(['error' => 'Product not found'], 404);
+                return response()->json(['error' => 'Error deleting product'], 500);
             }
-            $product->delete();
     
             return response()->json(['message' => 'Product deleted successfully']);
         } catch (\Exception $e) {

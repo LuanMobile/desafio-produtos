@@ -8,13 +8,11 @@ namespace Architecture\Application;
 class ProductInputDTO
 {
     public function __construct(
-        public string $name,
-        public string $description,
-        public float $price,
-        public int $quantity,
-        public bool $active,
+        public ?string $name = null,
+        public ?string $description = null,
+        public ?float $price = null,
+        public ?int $quantity = null,
+        public bool $active = true
     )
-    {
-
-    }
+    {}
 }

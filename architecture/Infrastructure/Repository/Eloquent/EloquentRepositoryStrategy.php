@@ -22,21 +22,23 @@ class EloquentRepositoryStrategy implements RepositoryInterface
         $this->model = new $modelString();
     }
 
-    public function save(object $entity): bool
+    public function save(object $entity): ?object
     {
-        $model = new $this->model((array)$entity);
-        return $model->save();
+        $model = $this->model::create((array)$entity);
+    
+        return $model;
     }
 
-    public function update(object $entity): bool
+    public function update(int $id, $entity): ?bool
     {
-        $model = $this->model->find($entity->getId());
+        $model = $this->model->find($id);
+
         return $model->update((array)$entity);
     }
 
-    public function delete(object $entity): bool
+    public function delete(int $id): bool
     {
-        $model = $this->model->find($entity->getId());
+        $model = $this->model->find($id);
         return $model->delete();
     }
 
@@ -45,8 +47,8 @@ class EloquentRepositoryStrategy implements RepositoryInterface
         return $this->model->find($id);
     }
 
-    public function findAll(): ?object
+    public function findAll(array $fields): ?object
     {
-        return $this->model->all();
+        return $this->model->all($fields);
     }
 }

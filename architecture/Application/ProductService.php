@@ -11,35 +11,50 @@ class ProductService
     )
     {}
 
-    public function create(ProductInputDTO $product): void
+    public function create(ProductInputDTO $product): ?object
     {
         $this->repository->setCollectionName('product');
 
-        if (false === $this->repository->save($product)) {
+        if (!$this->repository->save($product)) {
             throw new \Exception('Product cannot be created', 500);
         }
+
+        return $this->repository->save($product);
     }
 
-    public function update(ProductInputDTO $product): void
+    public function update(int $id, $product): ?bool
     {
         $this->repository->setCollectionName('product');
 
-        if (false === $this->repository->update($product)) {
-            throw new \Exception('Product cannot be updated', 500);
+        if (!$this->repository->update($id, $product)) {
+            return response()->json(['error' => 'Product cannot be updated'], 500);
         }
+
+        return $this->repository->update($id, $product);
     }
 
-    public function findById(int $id): object
+    public function findById(int $id): ?object
     {
         $this->repository->setCollectionName('product');
 
         return $this->repository->findById($id);
     }
 
-    public function findAll(): object
+    public function findAll(array $fields): ?object
     {
         $this->repository->setCollectionName('product');
 
-        return $this->repository->findAll();
+        if (!$this->repository->findAll($fields)) {
+            throw new \Exception("There are no products", 404);
+        }
+
+        return $this->repository->findAll($fields);
+    }
+
+    public function delete(int $id): ?bool
+    {
+        $this->repository->setCollectionName('product');
+       
+        return $this->repository->delete($id);
     }
 }
